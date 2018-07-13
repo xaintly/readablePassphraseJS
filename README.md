@@ -21,8 +21,10 @@ Include the javascript library on your web page;
    `<script type='text/javascript' src='dict-readablepassphrase.js'></script>`
    
 Then you can get a passphrase object:
+```javascript
    var myPhrase = new ReadablePassphrase( 'random' ); // call with the name of a template, eg 'normal' or 'random'
    console.log( myPhrase.toString() ); // show the generated phrase, eg "an orchid will oversee the fig"
+```   
    
 If you just want a basic random phrase, use these templates:
 * 'randomShort'   -> very short phrases, can be easily cracked in a day or so
@@ -31,7 +33,10 @@ If you just want a basic random phrase, use these templates:
 * 'randomForever' -> very high-strength phrase
    
 You can get a list of all available predefined templates:
-   `var templateNames = ReadablePassphrase.templates(); // returns an array: [ 'random', 'randomShort', ... 'normal' ]`
+
+```javascript
+   var templateNames = ReadablePassphrase.templates(); // returns an array: [ 'random', 'randomShort', ... 'normal' ]
+```
    
    
 
@@ -39,17 +44,21 @@ You can get a list of all available predefined templates:
  
 
 ReadablePassphrase uses a sentence template to generate a phrase.
+
 'normal' is the name of a predefined template that generates a basic noun, then a verb, then another noun.
  
 A template part may come out as multiple words in the final phrase. 
-In the example "an orchid will oversee the fig" breaks down as
+
+The phrase "an orchid will oversee the fig" breaks down as
 * noun: "an orchid"
 * verb: "will oversee"
 * noun: "the fig"
  
- A sentence template is an array of part objects.  Each object has a 'type' property.  
- Currently allowed types: noun, verb, conjunction, directSpeech
- Noun and Verb have several modifiers to determine the final form of the word.
+A sentence template is an array of part objects.  Each object has a 'type' property.  
+ 
+Currently allowed types: `noun, verb, conjunction, directSpeech`
+
+Noun and Verb have several modifiers to determine the final form of the word.
  
 ### Noun:
 * subtype [choice: common, proper, nounFromAdjective] - form of the noun
@@ -68,7 +77,9 @@ In the example "an orchid will oversee the fig" breaks down as
 ### Modifiers	
 When a modifier (called a 'factor' in the code) is a 'choice', it is specified as an object
 with the choices as properties, and each property has a numeric weight value.  Example:
-	`{ common: 1, proper: 4, nounFromAdjective: 0 }`
+```javascript
+	{ common: 1, proper: 4, nounFromAdjective: 0 }
+```
 	
 When the engine evaluates the choice, it randomly picks one of the properties, biased toward
 properties with higher weights.  In the example above, it would choose:
@@ -227,9 +238,10 @@ There are two predefined mutators:
 * 'random'   - completely random mutations (phrase will be hard to remember)
 	
 You can use the predefined mutators by passing their name as a string:
+```javascript
 	var mutantPhrase = new ReadablePassphrase( 'random', 'standard'  );
 	console.log(mutantPhrase.toString()); // the seashell IS5 signalling9 a windpipe
-
+```
 
 ## Entropy
 
