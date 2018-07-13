@@ -86,6 +86,7 @@ When a modifier is a boolean, it can be specified in two ways:
 
 	
 ### Sample templates parts
+```javascript
 	// A simple transitive verb, with a slight chance of being interrogative
 	{ type: 'verb',
 	  subtype: { 
@@ -107,10 +108,13 @@ When a modifier is a boolean, it can be specified in two ways:
 	// conjunctions and directSpeech take no other modifiers
 	{ type: 'conjunction' }
 	{ type: 'directSpeech' }
-
+```
+	
 To see an existing template, execute this in the console:
+```javascript
 	console.log( RPSentenceTemplates.byName('normal') ); 
-	  // some other templates: strongRequired, insaneSpeech
+	// some other templates: strongRequired, insaneSpeech
+```	
 
 
 	
@@ -142,8 +146,8 @@ There are public javascript libraries that generate real random numbers (gatheri
 input from the user's mouse movements, etc.), and most platforms and browsers now have an 
 built-in alternative.
 
-   Chrome, Firefox, Opera: window.crypto
-   Internet Explorer: window.msCrypto
+* Chrome, Firefox, Opera: window.crypto
+* Internet Explorer: window.msCrypto
    
 window.crypto (and msCrypto) work differently than Math.random(), but can be adapted to serve
 as a replacement.
@@ -157,14 +161,16 @@ the parameter (including 0, but not including the parameter itself; eg: paramete
 return values between 0 and 4.9999999).
 
 Example:
+```javascript
 	ReadablePassphrase.random = function ( maxValue ) {
 		var randomValues = new Uint32Array(1);
 		window.crypto.getRandomValues( randomValues );
 		return ( randomValues * ( maxValue || 1 ) / 0xFFFFFFFF );
 	}
+```	
 
-One good public javascript randomness library is the Stanford Javascript Crypto Library	(SJCL)
-  https://crypto.stanford.edu/sjcl/
+One good public javascript randomness library is the Stanford Javascript Crypto Library	
+[SJCL](https://crypto.stanford.edu/sjcl/)
 
 
 
@@ -175,19 +181,21 @@ the template calls for them.  To make the phrase more secure, it would be a good
 random capital letters and throw in some numbers.  This will make the phrase harder to remember,
 but a lot more secure.
 
-- Randomly capitalizing one entire word makes your password about 5x harder to crack
-- A single number added to the end of a random word makes your password about 50x harder to crack
+* Randomly capitalizing one entire word makes your password about 5x harder to crack
+* A single number added to the end of a random word makes your password about 50x harder to crack
 
 You can do this yourself after you choose your phrase; just think of a number or pick a word and
 make the modification when you use it.  However, this module can do this task for you as well.
 
 Pass a second parameter to ReadablePassphrase when creating the object:
+```javascript
 	var mutator = {
 		upper:   { type: 'WholeWord', count: 1 },
 		numbers: { type: 'EndOfWord', count: 2 }
 	};
 	var mutantPhrase = new ReadablePassphrase( 'random', mutator  );
 	console.log(mutantPhrase.toString()); // the seashell IS5 signalling9 a windpipe
+```	
 
 A mutator is an object with the properties seen above.  'upper' describes how to add uppecase
 letters, and 'numbers' describes how and where to add numbers.  'count' is the number of 
@@ -233,7 +241,9 @@ Choosing a random noun from a list of 3800 nouns gives you almost 12 bits of ent
 if you had flipped a coin 12 times).
 
 You can get an estimate of how much entropy is in any template:
+```javascript
 	var entropyOfNormal = RPSentenceTemplates.entropyOf('normal') // 27.74
+```	
 
 If an attacker knows how you generated your password, they can guess your password
 in [ 2 ^ (entropy - 1) ] tries, on average.  If you flip 2 coins, you have 4 possible results
@@ -249,7 +259,9 @@ Each added bit doubles the possibilities, and also doubles the amount of time it
 attacker to guess your combination.
 
 If you use a mutator, those have entropy too.  You can add the entropies together:
+```javascript
 	var entropyOfStandard = new RPMutator('standard').entropy() // 16.15
+```	
 
 So normal template + the standard mutator together have about 43.89 bits, which takes the
 possible combinations from 112 million (easily crackable) to 1.6 trillion which will be a
@@ -266,4 +278,4 @@ Uncompressed, the dictionary + library is about 700k.
 The wordList objects reconstruct the dictionary when the library is loaded. 
 Common patterns are reduced to a set of default transformations.
 
-The uncompressed javascript dictionary is available on request.
+The uncompressed javascript dictionary is available on [github](https://github.com/xaintly/readablePassphraseJS/tree/master/old)
