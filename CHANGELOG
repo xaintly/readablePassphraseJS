@@ -1,5 +1,8 @@
 Changelog:
 
+1.0.1:
+	add method: ReadablePassphrase.entropyOf( passphrase, mutator ) to get combined entropy
+	bugfix: sometimes an error was being thrown when no choices were possible, but this is normal
 1.0: 
 	entropy calculation
 	mutators

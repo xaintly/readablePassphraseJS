@@ -1,7 +1,7 @@
 /**
  * @file This is a port of the C# ReadablePassphraseGenerator, by Murray Grant
  * @author Steven Zeck <saintly@innocent.com>
- * @version 1.0.0
+ * @version 1.0.1
  * @license Apache-2
  *
  *
@@ -54,6 +54,18 @@ ReadablePassphrase.mutators = function () {
 	for( var mutatorName in RPMutator.mutators ) mutators.push( mutatorName );
 	return mutators;
 }
+
+/**
+ *  Get the number of bits of entropy in a template + mutator
+ *  @param {string} template - name of the given template (not a template object)
+ *  @param {(string|object)} [mutator]  - either a string name of a predefined mutator, or an RPMutator object
+ *  @return {number} floating-point number of bits
+ */
+ReadablePassphrase.entropyOf = function ( template, mutator ) {
+		mutator = mutator ? new RPMutator( mutator ) : null;	
+		return RPSentenceTemplate.entropyOf( template ) + ( mutator ? mutator.entropy() : 0 );
+}
+
 
 /**
  *  Get the string representation of the generated phrase
@@ -197,11 +209,14 @@ ReadablePassphrase.prototype.addVerb = function ( factors ) {
  *  @return {boolean} returns true if no more clauses should be added after this (currently always false)
  */
 ReadablePassphrase.prototype.addNoun = function ( factors ) {
-	switch( factors.byName('subtype') ) {
+	var n = factors.byName('subtype');
+	switch( n ) {
 		case 'common': return this.addCommonNoun( factors ); break;
 		case 'nounFromAdjective': return this.addNounFromAdjective( factors );	break;
 		case 'proper': this.appendWord( RPWordList.properNouns.getRandomWord( this.usedWords ) ); return false;
-		default: throw 'Unknown noun subtype';
+		default: 
+			console.log( this );
+			throw 'Unknown noun subtype: ' + n;
 	}
 }
 
@@ -790,6 +805,7 @@ RPRandomFactors.computeFactor = function ( factor ) {
 					totalWeight += factor[ weightFactor ];
 					weights.push({ value: weightFactor, weight: totalWeight });
 				}
+				if( totalWeight == 0 ) return false;
 				
 				var chosenWeight = ReadablePassphrase.randomness( totalWeight );
 				for( var checkWeight=0; checkWeight < weights.length; checkWeight++ ) {
@@ -798,6 +814,7 @@ RPRandomFactors.computeFactor = function ( factor ) {
 						break;
 					}
 				}
+
 				return false;
 			} else if( factor.length == 2 ) {
 				var chosenWeight = ReadablePassphrase.randomness( factor[0] + factor[1] );
