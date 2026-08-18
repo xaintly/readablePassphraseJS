@@ -5,10 +5,15 @@ import adverbs from './adverbs.js';
 import speechVerbs from './speech-verbs.js';
 import properNouns from './proper-nouns.js';
 import prepositions from './prepositions.js';
-import nouns from './nouns.js';
-import intransitiveVerbs from './intransitive-verbs.js';
-import verbs from './verbs.js';
 import { numbers, indefinitePronouns, conjunctions, personalPronouns, demonstratives, interrogatives, articles } from './small-lists.js';
+
+// nouns/verbs/intransitive-verbs are generated at build/test time (see scripts/compress-dictionary.js)
+// from the human-edited, fully-spelled-out source in src/dictionary/source/*.js. Run
+// `npm run compress-dictionary` (or `npm run build` / `npm test`, which do it for you) if these
+// imports fail to resolve.
+import nouns from './generated/nouns.js';
+import intransitiveVerbs from './generated/intransitive-verbs.js';
+import verbs from './generated/verbs.js';
 
 // Populates the RPWordList.* dictionary registry used throughout the engine.
 // Imported once (for its side effects) by src/index.js before anything else runs.

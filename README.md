@@ -287,10 +287,13 @@ better to use stronger templates than 'normal'.
 
 ## Compression
 
-The dictionary is somewhat compressed to reduce the total size of the library.  
-Uncompressed, the dictionary + library is about 700k.
+The noun and verb dictionaries are compressed to reduce the size of what ships in `dist/` (this
+roughly halves the gzip-compressed size of the browser bundle). This is a build-time step, not
+something you need to think about as a consumer of the library — the `wordList` objects
+reconstruct the full dictionary from the compressed form when the library loads.
 
-The wordList objects reconstruct the dictionary when the library is loaded. 
-Common patterns are reduced to a set of default transformations.
-
-The uncompressed javascript dictionary is available on [github](https://github.com/xaintly/readablePassphraseJS/tree/master/old)
+If you want to edit the dictionaries (eg. to add a verb), edit the human-readable, fully-spelled-out
+source in [`src/dictionary/source/`](src/dictionary/source/) — `nouns.js` (singular/plural pairs)
+and `verbs.js`/`intransitive-verbs.js` (all 14 tenses spelled out). `npm run build` (or
+`npm test`) compresses these into `src/dictionary/generated/` automatically before bundling; you
+never need to hand-compress anything.

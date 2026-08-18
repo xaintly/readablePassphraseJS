@@ -20,7 +20,10 @@
     "node": ">=19"
   },
   "scripts": {
+    "compress-dictionary": "node scripts/compress-dictionary.js",
+    "prebuild": "npm run compress-dictionary",
     "build": "tsup",
+    "pretest": "npm run compress-dictionary",
     "test": "node --test"
   },
   "license": "Apache-2.0",
