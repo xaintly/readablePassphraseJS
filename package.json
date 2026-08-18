@@ -1,0 +1,32 @@
+{
+  "name": "readable-passphrase",
+  "version": "2.0.0",
+  "description": "Generates grammatically-structured, memorable English passphrases",
+  "type": "module",
+  "main": "./dist/readable-passphrase.cjs",
+  "module": "./dist/readable-passphrase.mjs",
+  "browser": "./dist/readable-passphrase.global.js",
+  "exports": {
+    ".": {
+      "import": "./dist/readable-passphrase.mjs",
+      "require": "./dist/readable-passphrase.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=19"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "node --test"
+  },
+  "license": "Apache-2.0",
+  "author": "Steven Zeck <saintly@innocent.com>",
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^7.0.2"
+  }
+}

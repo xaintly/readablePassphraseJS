@@ -16,16 +16,31 @@ than a long string of random letters & numbers, or 4 random words.
  
  
 ## Basic usage
- 
-Include the javascript library on your web page;
-   `<script type='text/javascript' src='dict-readablepassphrase.js'></script>`
-   
+
+### In a browser
+
+Build the browser bundle (`npm install && npm run build`), then include it on your web page:
+   `<script type='text/javascript' src='dist/readable-passphrase.global.js'></script>`
+
+This exposes three globals: `ReadablePassphrase`, `RPMutator`, and `RPSentenceTemplate` (the
+internal-only `RPWord`/`RPWordList*`/`RPRandomFactors` classes are not exposed).
+
 Then you can get a passphrase object:
 ```javascript
    var myPhrase = new ReadablePassphrase( 'random' ); // call with the name of a template, eg 'normal' or 'random'
    console.log( myPhrase.toString() ); // show the generated phrase, eg "an orchid will oversee the fig"
-```   
-   
+```
+
+### In Node / from npm
+
+```javascript
+   import ReadablePassphrase from 'readable-passphrase'; // ESM
+   // const { default: ReadablePassphrase } = require('readable-passphrase'); // CJS
+
+   const myPhrase = new ReadablePassphrase('random');
+   console.log(myPhrase.toString());
+```
+
 If you just want a basic random phrase, use these templates:
 * 'randomShort'   -> very short phrases, can be easily cracked in a day or so
 * 'random'        -> medium strength phrase
@@ -146,39 +161,27 @@ If this function does not exist, nothing will happen.
 
 ## Randomness
 
-This library does NOT include a good source of randomness.  All random numbers come from a 
-function called  ReadablePassphrase.random(), which just uses Math.random() for random numbers.
+All random numbers come from a function called `ReadablePassphrase.randomness()`. By default,
+this uses `globalThis.crypto.getRandomValues()` — a cryptographically strong source available
+natively in modern browsers and in Node.js 19+. It only falls back to `Math.random()` (with a
+one-time console warning) if `globalThis.crypto` is genuinely unavailable in your environment;
+`Math.random()` is not cryptographically secure and should not be relied on for generating
+passwords.
 
-In most browsers, Math.random() does not return true random numbers.  Instead, it uses an
-algorithm to return 'random-looking' numbers, but if you know the algorithm and the previous
-number, you can easily guess the next number.  This is really bad for passwords!  
-
-There are public javascript libraries that generate real random numbers (gathering random
-input from the user's mouse movements, etc.), and most platforms and browsers now have an 
-built-in alternative.
-
-* Chrome, Firefox, Opera: window.crypto
-* Internet Explorer: window.msCrypto
-   
-window.crypto (and msCrypto) work differently than Math.random(), but can be adapted to serve
-as a replacement.
-
-Whatever you choose, you should build your solution into a replacement function for 
-ReadablePassphrase.random().  You should do this after the ReadablePassphrase library has
-finished loading. 
-
-The function should accept 1 numeric parameter and output a floating-point number between 0 and
-the parameter (including 0, but not including the parameter itself; eg: parameter = 5 should
-return values between 0 and 4.9999999).
+If you want to supply your own randomness source (eg. gathering entropy from mouse movements, a
+hardware RNG, random.org, etc.), replace `ReadablePassphrase.randomness` after the library has
+finished loading. The function should accept 1 numeric parameter and output a floating-point
+number between 0 and the parameter (including 0, but not including the parameter itself; eg:
+parameter = 5 should return values between 0 and 4.9999999).
 
 Example:
 ```javascript
-	ReadablePassphrase.random = function ( maxValue ) {
+	ReadablePassphrase.randomness = function ( maxValue ) {
 		var randomValues = new Uint32Array(1);
 		window.crypto.getRandomValues( randomValues );
-		return ( randomValues * ( maxValue || 1 ) / 0xFFFFFFFF );
+		return ( randomValues[0] * ( maxValue || 1 ) / 0xFFFFFFFF );
 	}
-```	
+```
 
 One good public javascript randomness library is the Stanford Javascript Crypto Library	
 [SJCL](https://crypto.stanford.edu/sjcl/)

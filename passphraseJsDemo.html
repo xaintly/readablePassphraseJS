@@ -17,7 +17,7 @@
 		document.getElementById('passphrase').innerHTML = 'Loading Readable Passphrase Dictionary...';
 		var dictScript = document.createElement('script');
 		dictScript.type = 'text/javascript';
-		dictScript.src  = 'dict-readablepassphrase.js';
+		dictScript.src  = 'dist/readable-passphrase.global.js';
 		document.body.appendChild( dictScript );
 		// when the script loads, it will look for and call a function called 'ReadablePassphrase_Callback()'
 		return false;
