@@ -25,7 +25,6 @@ jobs:
         run: |
           mkdir -p pkg/readable-passphrase
           cp -r dist pkg/readable-passphrase/dist
-          cp -r reference pkg/readable-passphrase/reference
           cp passphraseJsDemo.html pkg/readable-passphrase/
           cp README.md pkg/readable-passphrase/
           (cd pkg && zip -r ../readable-passphrase-browser.zip readable-passphrase)
