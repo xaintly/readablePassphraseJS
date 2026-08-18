@@ -1,0 +1,36 @@
+name: Package browser distribution
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Assemble distribution folder
+        run: |
+          mkdir -p pkg/readable-passphrase
+          cp -r dist pkg/readable-passphrase/dist
+          cp -r reference pkg/readable-passphrase/reference
+          cp passphraseJsDemo.html pkg/readable-passphrase/
+          cp README.md pkg/readable-passphrase/
+          (cd pkg && zip -r ../readable-passphrase-browser.zip readable-passphrase)
+
+      - name: Attach zip to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.event.release.tag_name }}" readable-passphrase-browser.zip --clobber
