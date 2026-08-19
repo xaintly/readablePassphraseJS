@@ -19,7 +19,9 @@ export class RPWordList {
 	/**
 	 *  Get a random word from the pool.
 	 *  Note that passing alreadyChosen{} actually weakens the overall strength of the passphrase slightly
-	 *  @param {object} [alreadyChosen] - if a hash of words that are already chosen is provided, this will avoid returning one already chosen
+	 *  @param {*} [alreadyChosen] - if a hash of words that are already chosen is provided, this will avoid returning one already chosen
+	 *    (typed loosely - `*` not `object` - because subclasses override this with a leading non-object
+	 *    parameter, eg RPWordListPlural's `isPlural`; keep it loose rather than narrowing it back)
 	 *  @return {RPWord} the chosen word
 	 */
 	getRandomWord(alreadyChosen) {

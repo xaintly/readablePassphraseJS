@@ -100,6 +100,9 @@ Then you can get a passphrase object:
    console.log(myPhrase.toString());
 ```
 
+TypeScript type declarations are included, generated from the library's JSDoc comments - no
+`@types/` package needed, and no extra setup beyond installing the package.
+
 If you just want a basic random phrase, use these templates:
 * 'randomShort'   -> very short phrases; see "When (and when not) to use this" above for how weak this actually is
 * 'random'        -> medium strength phrase

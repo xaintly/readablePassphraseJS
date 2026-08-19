@@ -10,6 +10,7 @@ export default defineConfig([
 		clean: true,
 		sourcemap: true,
 		minify: false,
+		dts: true,
 	},
 	// Browser global/IIFE build for <script> tag usage
 	{

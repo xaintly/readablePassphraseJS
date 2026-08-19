@@ -6,10 +6,17 @@
   "main": "./dist/readable-passphrase.cjs",
   "module": "./dist/readable-passphrase.mjs",
   "browser": "./dist/readable-passphrase.global.js",
+  "types": "./dist/readable-passphrase.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/readable-passphrase.mjs",
-      "require": "./dist/readable-passphrase.cjs"
+      "import": {
+        "types": "./dist/readable-passphrase.d.ts",
+        "default": "./dist/readable-passphrase.mjs"
+      },
+      "require": {
+        "types": "./dist/readable-passphrase.d.cts",
+        "default": "./dist/readable-passphrase.cjs"
+      }
     }
   },
   "bin": {
@@ -34,6 +41,6 @@
   "author": "Steven Zeck <saintly@innocent.com>",
   "devDependencies": {
     "tsup": "^8.0.0",
-    "typescript": "^7.0.2"
+    "typescript": "^5.9.3"
   }
 }
