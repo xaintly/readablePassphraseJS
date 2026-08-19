@@ -31,7 +31,11 @@ export class RPMutator {
 	 *  @return {string} a mutated string
 	 */
 	mutate(string) {
-		const words = string.split(' '); // we already have parts[], but a part might have multiple words in it
+		// Normalize to NFC first (collapses eg. "e" + combining acute accent into a single "é"
+		// codepoint) and slice by codepoint rather than raw UTF-16 index everywhere below, so
+		// inserting a letter/number can't land in the middle of a surrogate pair or a
+		// not-yet-composed accent and corrupt the character it touches.
+		const words = string.normalize('NFC').split(' '); // we already have parts[], but a part might have multiple words in it
 		if (this.upper && this.upper.type !== 'none') {
 			let count = this.upper.count || ReadablePassphrase.randomInt(words.length) + 1;
 			if (count > words.length) count = words.length;
@@ -43,7 +47,7 @@ export class RPMutator {
 			const upperTechniques = ['StartOfWord', 'WholeWord', 'Anywhere', 'RunOfLetters'];
 			const upperType = this.upper.type;
 			chosenUpper.forEach((wordNumber) => {
-				const thisWord = words[wordNumber];
+				const chars = Array.from(words[wordNumber]);
 				let thisTechnique = upperType;
 				let start = 0;
 				let end = 0;
@@ -53,20 +57,20 @@ export class RPMutator {
 						end = 1;
 						break;
 					case 'WholeWord':
-						end = thisWord.length;
+						end = chars.length;
 						break;
 					case 'Anywhere':
-						start = ReadablePassphrase.randomInt(thisWord.length);
+						start = ReadablePassphrase.randomInt(chars.length);
 						end = start + 1;
 						break;
 					case 'RunOfLetters':
-						start = ReadablePassphrase.randomInt(thisWord.length - 1);
-						end = start + 2 + ReadablePassphrase.randomInt(thisWord.length - start);
+						start = ReadablePassphrase.randomInt(chars.length - 1);
+						end = start + 2 + ReadablePassphrase.randomInt(chars.length - start);
 						break;
 					default:
 						throw new Error(`Unknown word uppercasing technique: ${thisTechnique}`);
 				}
-				words[wordNumber] = thisWord.slice(0, start) + thisWord.slice(start, end).toUpperCase() + thisWord.slice(end, thisWord.length);
+				words[wordNumber] = chars.slice(0, start).join('') + chars.slice(start, end).join('').toUpperCase() + chars.slice(end, chars.length).join('');
 			});
 		}
 		if (this.numbers && this.numbers.type !== 'none') {
@@ -87,8 +91,9 @@ export class RPMutator {
 						break;
 					case 'random':
 					case 'Anywhere': {
-						const thisPosition = ReadablePassphrase.randomInt(thisWord.length);
-						thisWord = thisWord.slice(0, thisPosition) + thisNumber + thisWord.slice(thisPosition, thisWord.length);
+						const chars = Array.from(thisWord);
+						const thisPosition = ReadablePassphrase.randomInt(chars.length);
+						thisWord = chars.slice(0, thisPosition).join('') + thisNumber + chars.slice(thisPosition, chars.length).join('');
 						break;
 					}
 					default:
