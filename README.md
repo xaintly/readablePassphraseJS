@@ -4,6 +4,65 @@ Javascript implementation of Murray Grant's readable passphrase generator
 Readable Passphrase Generator creates random english sentences.  They may be easier to remember
 than a long string of random letters & numbers, or 4 random words.
 
+## When (and when not) to use this
+
+For most passwords today, you should be using a password manager (Bitwarden, KeePass, 1Password,
+etc.) with long random strings, or better yet SSH keys/client certs where the site supports them.
+A memorable sentence is a *worse* password than a random string of the same length — its value is
+being easy to type and remember, not being maximally strong for its length.
+
+That tradeoff is still worth making in a few specific situations:
+* **Temporary passwords** you hand to someone and expect them to change on first login.
+* **A password manager's own master password** — this is the one place a memorable phrase is
+  genuinely appealing, since you *do* have to recall and type it yourself, sometimes under
+  pressure, with nothing else to fall back on. Be deliberate about template/mutator choice here:
+  a short, un-mutated phrase can be meaningfully weaker than you'd expect (see the table below) —
+  this is exactly the password you least want to be a weak link.
+* **Offline apps or anything you type often**, where a password manager isn't practical or the
+  friction of typing a long random string repeatedly isn't worth it.
+
+### How strong is strong enough?
+
+How fast a phrase can be guessed depends entirely on where an attacker is guessing *against*, not
+just on its entropy:
+
+| Scenario | Realistic guess rate (2026) |
+|---|---|
+| Online, against a reasonably rate-limited login form | ~10/sec |
+| Offline, against a password manager's own KDF (bcrypt/Argon2, as KeePass/Bitwarden use) | ~10<sup>3</sup>&ndash;10<sup>4</sup>/sec |
+| Offline, against a fast/weak hash (eg. unsalted MD5 — still shows up in real breaches) on a single modern consumer GPU | ~10<sup>11</sup>/sec |
+
+That last row is the important update from a few years ago: a single high-end consumer GPU can
+now attempt roughly as many fast hashes per second as there are people on Earth. A guess rate you
+might remember as "one thousand a second" is only realistic anymore against a **properly
+slow-hashed** target — which is exactly what a password manager's vault is, but is *not* something
+you control or know about on a random website.
+
+Average time to guess (bits of entropy computed by `entropyOf()` in this library; "average" means
+half the search space, a reasonable planning assumption):
+
+| Passphrase | Entropy | vs. rate-limited login | vs. offline KDF attack | vs. offline weak-hash GPU |
+|---|---|---|---|---|
+| `randomShort`, no mutator | 34 bits | 29 years | 11 days | instant |
+| `random`, no mutator | 47 bits | 224,536 years | 225 years | 7 minutes |
+| `random` + `standard` mutator | 63 bits | 1.6&times;10<sup>10</sup> years | 1.6&times;10<sup>7</sup> years | ~1 year |
+| `randomForever` + `standard` mutator | 83 bits | 1.5&times;10<sup>16</sup> years | 1.5&times;10<sup>13</sup> years | 964,375 years |
+| 4-word [diceware](https://www.eff.org/dice) (EFF large wordlist) | 52 bits | 5.8M years | 5,796 years | 3.2 hours |
+| 8 random printable-ASCII characters | 52 bits | 9.7M years | 9,680 years | 5.3 hours |
+| 25 random printable-ASCII characters | 164 bits | effectively unguessable in every scenario above |
+
+A few takeaways:
+* `random` with no mutator and 4-word diceware land in roughly the same place — neither is
+  "stronger" than the other in any way that matters.
+* The `standard` mutator (or a longer template) isn't optional flavor — it's the difference between
+  "safe against a determined attacker with a GPU" and "not."
+* If you can't guarantee your password ends up behind a slow KDF (you generally can't — you don't
+  control how a website stores it), don't rely on a mid-strength phrase alone for anything you'd be
+  upset to lose.
+* If a password manager is storing it for you, there's no cost to going long — 25 random characters
+  costs you nothing to store and is effectively immune to brute force in any of these scenarios.
+  Only use a memorable phrase where memorability is actually buying you something.
+
 ## About the generator & Licensing
 
 * This is a port of the C# ReadablePassphraseGenerator, by Murray Grant
@@ -42,7 +101,7 @@ Then you can get a passphrase object:
 ```
 
 If you just want a basic random phrase, use these templates:
-* 'randomShort'   -> very short phrases, can be easily cracked in a day or so
+* 'randomShort'   -> very short phrases; see "When (and when not) to use this" above for how weak this actually is
 * 'random'        -> medium strength phrase
 * 'randomLong'    -> high-strength phrase
 * 'randomForever' -> very high-strength phrase
@@ -52,8 +111,25 @@ You can get a list of all available predefined templates:
 ```javascript
    var templateNames = ReadablePassphrase.templates(); // returns an array: [ 'random', 'randomShort', ... 'normal' ]
 ```
-   
-   
+
+### Command line
+
+Installing the package also gives you a `readable-passphrase` command for quick terminal use
+(eg. generating a temporary password without writing any code):
+```
+npx readable-passphrase
+npx readable-passphrase --template randomLong --mutator standard --count 3
+npx readable-passphrase --template normal --separator - --count 1
+npx readable-passphrase --list    # show available template/mutator names
+npx readable-passphrase --help
+```
+
+| Option | Default | Description |
+|---|---|---|
+| `-t, --template <name>` | `random` | Sentence template to use |
+| `-m, --mutator <name>` | `none` | Mutator to apply, or `none` |
+| `-s, --separator <chars>` | ` ` (space) | String to join words with, eg `-` or `` (empty) |
+| `-n, --count <number>` | `5` | Number of phrases to generate |
 
 ## Templates
  
@@ -244,6 +320,24 @@ You can use the predefined mutators by passing their name as a string:
 ```javascript
 	var mutantPhrase = new ReadablePassphrase( 'random', 'standard'  );
 	console.log(mutantPhrase.toString()); // the seashell IS5 signalling9 a windpipe
+```
+
+### Word separator
+
+Phrases are joined with a space by default, but plenty of real-world password fields quietly
+reject or mangle spaces. Pass a `separator` on the mutator object to join words with anything else
+(or nothing at all):
+```javascript
+	var dashPhrase = new ReadablePassphrase( 'random', { upper: 'none', numbers: 'none', separator: '-' } );
+	console.log(dashPhrase.toString()); // the-seashell-signalling-a-windpipe
+```
+
+You can also override the separator per call to `.toString()`, without changing the mutator:
+```javascript
+	var phrase = new ReadablePassphrase('random');
+	console.log(phrase.toString());      // the seashell signalling a windpipe
+	console.log(phrase.toString('-'));   // the-seashell-signalling-a-windpipe
+	console.log(phrase.toString(''));    // theseashellsignallingawindpipe
 ```
 
 ## Entropy

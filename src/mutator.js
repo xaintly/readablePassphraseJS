@@ -12,25 +12,29 @@ function parseSpec(spec) {
 export class RPMutator {
 	/**
 	 *  @param {(string|object)} [mutatorSpec] - either a string name of a predefined mutator (see RPMutator.mutators),
-	 *    or an object with 'upper' and 'numbers' properties (each a { type, count } spec or a [ type, count ] array)
+	 *    or an object with 'upper' and 'numbers' properties (each a { type, count } spec or a [ type, count ] array),
+	 *    plus an optional 'separator' string (default ' ') used to join words back together
 	 */
 	constructor(mutatorSpec) {
 		this.upper = { type: 'none' };
 		this.numbers = { type: 'none' };
+		this.separator = ' ';
 
 		if (!mutatorSpec) return;
 		if (typeof mutatorSpec === 'string') mutatorSpec = RPMutator.mutators[mutatorSpec];
 
 		this.upper = parseSpec(mutatorSpec.upper);
 		this.numbers = parseSpec(mutatorSpec.numbers);
+		if (mutatorSpec.separator !== undefined) this.separator = mutatorSpec.separator;
 	}
 
 	/**
 	 *  Mutate a string according to the mutator specification
 	 *  @param {string} string - a string to mutate, should be multiple words with spaces in between
+	 *  @param {string} [separator] - overrides this mutator's configured separator for this call only
 	 *  @return {string} a mutated string
 	 */
-	mutate(string) {
+	mutate(string, separator) {
 		// Normalize to NFC first (collapses eg. "e" + combining acute accent into a single "é"
 		// codepoint) and slice by codepoint rather than raw UTF-16 index everywhere below, so
 		// inserting a letter/number can't land in the middle of a surrogate pair or a
@@ -102,7 +106,7 @@ export class RPMutator {
 				words[chosenWord] = thisWord;
 			}
 		}
-		return words.join(' ');
+		return words.join(separator !== undefined ? separator : this.separator);
 	}
 
 	/**

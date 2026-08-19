@@ -19,6 +19,27 @@ test('no mutator spec leaves a phrase unchanged', () => {
 	assert.equal(mutator.entropy(), 0);
 });
 
+test('separator defaults to a space', () => {
+	const mutator = new RPMutator();
+	assert.equal(mutator.mutate('the quick brown fox'), 'the quick brown fox');
+});
+
+test('separator can be set on construction', () => {
+	const mutator = new RPMutator({ upper: { type: 'none' }, numbers: { type: 'none' }, separator: '-' });
+	assert.equal(mutator.mutate('the quick brown fox'), 'the-quick-brown-fox');
+});
+
+test('separator can be an empty string (no separator at all)', () => {
+	const mutator = new RPMutator({ upper: { type: 'none' }, numbers: { type: 'none' }, separator: '' });
+	assert.equal(mutator.mutate('the quick brown fox'), 'thequickbrownfox');
+});
+
+test('mutate() separator argument overrides the constructed separator for one call only', () => {
+	const mutator = new RPMutator({ upper: { type: 'none' }, numbers: { type: 'none' }, separator: '_' });
+	assert.equal(mutator.mutate('the quick brown fox', '|'), 'the|quick|brown|fox');
+	assert.equal(mutator.mutate('the quick brown fox'), 'the_quick_brown_fox', 'override must not stick around for later calls');
+});
+
 function isWellFormedUtf16(string) {
 	try {
 		encodeURIComponent(string); // throws URIError on an unpaired surrogate

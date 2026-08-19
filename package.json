@@ -12,8 +12,12 @@
       "require": "./dist/readable-passphrase.cjs"
     }
   },
+  "bin": {
+    "readable-passphrase": "./bin/readable-passphrase.js"
+  },
   "files": [
     "dist",
+    "bin",
     "README.md"
   ],
   "engines": {

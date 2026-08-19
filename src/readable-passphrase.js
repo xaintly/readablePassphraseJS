@@ -23,12 +23,14 @@ export class ReadablePassphrase {
 
 	/**
 	 *  Get the string representation of the generated phrase
+	 *  @param {string} [separator] - overrides the mutator's configured word separator for this call only
+	 *    (eg. '-' or '' for password fields that don't accept spaces); defaults to ' '
 	 *  @return {string} A phrase, eg "the milk will eat the angry decision"
 	 */
-	toString() {
+	toString(separator) {
 		const phrase = [];
 		for (let wordNum = 0; wordNum < this.parts.length; wordNum++) phrase.push(this.parts[wordNum].value);
-		return this.mutator.mutate(phrase.join(' '));
+		return this.mutator.mutate(phrase.join(' '), separator);
 	}
 
 	// ****** methods called by addTemplate() *******
